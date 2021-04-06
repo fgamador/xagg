@@ -1,4 +1,3 @@
-//use serde::Deserialize;
 use serde::Deserialize;
 use std::error::Error;
 use std::fs;
@@ -7,6 +6,7 @@ use std::process;
 #[derive(Debug, Deserialize)]
 struct CsvConfig {
     date_index: u32,
+    date_format: String,
     description_index: u32,
     amount_index: u32,
 }
