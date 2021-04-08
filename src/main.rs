@@ -37,13 +37,13 @@ fn dir_example() -> io::Result<()> {
         .map(|result| result.map(input_subdir_to_pair));
 
     for item in it {
-        println!("{:?}", item?);
+        println!("{:?}", item?.0);
     }
     Ok(())
 }
 
-fn input_subdir_to_pair(subdir: DirEntry) -> CsvConfig {
-    input_subdir_to_csv_config(&subdir)
+fn input_subdir_to_pair(subdir: DirEntry) -> (CsvConfig, impl Iterator<Item=PathBuf>) {
+    (input_subdir_to_csv_config(&subdir), input_subdir_to_csv_file_path_iter(&subdir))
 }
 
 fn input_subdir_to_csv_config(subdir: &DirEntry) -> CsvConfig {
