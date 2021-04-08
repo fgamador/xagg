@@ -37,7 +37,11 @@ fn dir_example() -> io::Result<()> {
         .map(|result| result.map(input_subdir_to_pair));
 
     for item in it {
-        println!("{:?}", item?.0);
+        let pair = item?;
+        println!("{:?}", pair.0);
+        for path in pair.1 {
+            println!("{:?}", path);
+        }
     }
     Ok(())
 }
