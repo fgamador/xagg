@@ -1,8 +1,10 @@
 use csv::StringRecord;
 use serde::Deserialize;
+use std::error::Error;
 use std::fs;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
+use std::process::exit;
 
 #[derive(Debug, Deserialize)]
 struct CsvConfig {
@@ -69,8 +71,18 @@ where
     I: Iterator<Item = PathBuf>,
 {
     paths
-        .map(|path| csv::Reader::from_path(path).unwrap().into_records())
+        .map(|path| unwrap_or_exit(csv::Reader::from_path(&path), &path).into_records())
         .flatten()
+}
+
+fn unwrap_or_exit<T, E: Error>(result: Result<T, E>, path: &Path) -> T {
+    match result {
+        Ok(value) => value,
+        Err(error) => {
+            println!("{}: {}", path.display(), error);
+            exit(1)
+        }
+    }
 }
 
 fn main() {
