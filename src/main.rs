@@ -15,7 +15,7 @@ struct CsvConfig {
 }
 
 fn input_iter_example() {
-    for pair in input_dir_to_pair_iterator(&Path::new("input")) {
+    for pair in input_dir_to_pair_iterator(PathBuf::from("input")) {
         println!("{:?}", pair.0);
         for path in pair.1 {
             println!("{:?}", path);
@@ -24,10 +24,10 @@ fn input_iter_example() {
 }
 
 fn input_dir_to_pair_iterator(
-    dir: &Path,
+    dir: PathBuf,
 ) -> impl Iterator<Item = (CsvConfig, impl Iterator<Item = StringRecord>)> {
-    unwrap_or_exit( fs::read_dir(dir), dir)
-        .map(|result| input_subdir_to_pair(result.unwrap()))
+    unwrap_or_exit(fs::read_dir(&dir), &dir)
+        .map(move |result| input_subdir_to_pair(unwrap_or_exit(result, &dir)))
 }
 
 fn input_subdir_to_pair(subdir: DirEntry) -> (CsvConfig, impl Iterator<Item = StringRecord>) {
