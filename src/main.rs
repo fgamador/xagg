@@ -26,8 +26,7 @@ fn input_iter_example() {
 fn input_dir_to_pair_iterator(
     dir: &Path,
 ) -> impl Iterator<Item = (CsvConfig, impl Iterator<Item = StringRecord>)> {
-    fs::read_dir(dir)
-        .unwrap()
+    unwrap_or_exit( fs::read_dir(dir), dir)
         .map(|result| input_subdir_to_pair(result.unwrap()))
 }
 
