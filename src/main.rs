@@ -1,6 +1,6 @@
 use csv::StringRecord;
 use serde::Deserialize;
-use std::error::Error;
+use std::fmt::{Debug, Display};
 use std::fs;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
@@ -53,7 +53,7 @@ fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item =
         .unwrap()
         .filter_map(move |result| {
             let entry = unwrap_or_exit(result, &subdir_path);
-            let file_name = entry.file_name().into_string().unwrap();
+            let file_name = unwrap_or_exit_debug(entry.file_name().into_string(), &entry.path());
             if file_name.to_lowercase().ends_with(".csv") {
                 Some(entry.path())
             } else {
@@ -73,11 +73,21 @@ where
         .flatten()
 }
 
-fn unwrap_or_exit<T, E: Error>(result: Result<T, E>, path: &Path) -> T {
+fn unwrap_or_exit<T, E: Display>(result: Result<T, E>, path: &Path) -> T {
     match result {
         Ok(value) => value,
         Err(error) => {
             println!("{}: {}", path.display(), error);
+            exit(1)
+        }
+    }
+}
+
+fn unwrap_or_exit_debug<T, E: Debug>(result: Result<T, E>, path: &Path) -> T {
+    match result {
+        Ok(value) => value,
+        Err(error) => {
+            println!("{}: {:?}", path.display(), error);
             exit(1)
         }
     }
