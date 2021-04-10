@@ -14,7 +14,7 @@ pub struct CsvConfig {
     amount_index: u32,
 }
 
-pub fn input_dir_to_pair_iterator(
+pub fn read_input(
     dir: PathBuf,
 ) -> impl Iterator<Item = (CsvConfig, impl Iterator<Item = StringRecord>)> {
     unwrap_or_exit(fs::read_dir(&dir), &dir)
