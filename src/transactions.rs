@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct CsvConfig {
-    source: String,
+    pub(crate) source: String,
     date_index: usize,
     date_format: String,
     description_index: usize,
@@ -25,7 +25,7 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
             csv_record.get(csv_config.date_index).unwrap_or(""),
             &csv_config.date_format,
         )
-        .unwrap_or(NaiveDate::from_ymd(1, 1, 1)),
+        .unwrap_or_else(|_| NaiveDate::from_ymd(1, 1, 1)),
         raw_description: csv_record
             .get(csv_config.description_index)
             .unwrap_or("")
