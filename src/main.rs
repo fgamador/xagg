@@ -49,20 +49,17 @@ fn input_subdir_to_csv_config(subdir: &DirEntry) -> CsvConfig {
 
 fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item = PathBuf> {
     let subdir_path = subdir.path();
-    fs::read_dir(&subdir_path).unwrap().filter_map(move |result| {
-        let entry = unwrap_or_exit(result, &subdir_path);
-        if entry
-            .file_name()
-            .into_string()
-            .unwrap()
-            .to_lowercase()
-            .ends_with(".csv")
-        {
-            Some(entry.path())
-        } else {
-            None
-        }
-    })
+    fs::read_dir(&subdir_path)
+        .unwrap()
+        .filter_map(move |result| {
+            let entry = unwrap_or_exit(result, &subdir_path);
+            let file_name = entry.file_name().into_string().unwrap();
+            if file_name.to_lowercase().ends_with(".csv") {
+                Some(entry.path())
+            } else {
+                None
+            }
+        })
 }
 
 fn csv_file_path_iter_to_csv_record_iter<I>(
