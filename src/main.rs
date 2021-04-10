@@ -25,15 +25,13 @@ fn input_iter_example() {
 
 fn input_dir_to_pair_iterator(
     dir: &Path,
-) -> impl Iterator<Item = (CsvConfig, impl Iterator<Item = csv::Result<StringRecord>>)> {
+) -> impl Iterator<Item = (CsvConfig, impl Iterator<Item = StringRecord>)> {
     fs::read_dir(dir)
         .unwrap()
         .map(|result| input_subdir_to_pair(result.unwrap()))
 }
 
-fn input_subdir_to_pair(
-    subdir: DirEntry,
-) -> (CsvConfig, impl Iterator<Item = csv::Result<StringRecord>>) {
+fn input_subdir_to_pair(subdir: DirEntry) -> (CsvConfig, impl Iterator<Item = StringRecord>) {
     (
         input_subdir_to_csv_config(&subdir),
         csv_file_path_iter_to_csv_record_iter(input_subdir_to_csv_file_path_iter(&subdir)),
@@ -49,26 +47,27 @@ fn input_subdir_to_csv_config(subdir: &DirEntry) -> CsvConfig {
 
 fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item = PathBuf> {
     let subdir_path = subdir.path();
-    unwrap_or_exit(fs::read_dir(&subdir_path), &subdir_path)
-        .filter_map(move |result| {
-            let entry = unwrap_or_exit(result, &subdir_path);
-            let file_name = unwrap_or_exit_debug(entry.file_name().into_string(), &entry.path());
-            if file_name.to_lowercase().ends_with(".csv") {
-                Some(entry.path())
-            } else {
-                None
-            }
-        })
+    unwrap_or_exit(fs::read_dir(&subdir_path), &subdir_path).filter_map(move |result| {
+        let entry = unwrap_or_exit(result, &subdir_path);
+        let file_name = unwrap_or_exit_debug(entry.file_name().into_string(), &entry.path());
+        if file_name.to_lowercase().ends_with(".csv") {
+            Some(entry.path())
+        } else {
+            None
+        }
+    })
 }
 
-fn csv_file_path_iter_to_csv_record_iter<I>(
-    paths: I,
-) -> impl Iterator<Item = csv::Result<StringRecord>>
+fn csv_file_path_iter_to_csv_record_iter<I>(paths: I) -> impl Iterator<Item = StringRecord>
 where
     I: Iterator<Item = PathBuf>,
 {
     paths
-        .map(|path| unwrap_or_exit(csv::Reader::from_path(&path), &path).into_records())
+        .map(|path| {
+            unwrap_or_exit(csv::Reader::from_path(&path), &path)
+                .into_records()
+                .map(move |result| unwrap_or_exit(result, &path))
+        })
         .flatten()
 }
 
