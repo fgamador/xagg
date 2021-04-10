@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct CsvConfig {
-    pub(crate) source: String,
+    pub source: String, // TODO use dir name instead
     date_index: usize,
     date_format: String,
     description_index: usize,
@@ -13,9 +13,9 @@ pub struct CsvConfig {
 
 #[derive(Debug)]
 pub struct Transaction {
-    date: NaiveDate,
-    raw_description: String,
-    amount: f32,
+    pub date: NaiveDate,
+    pub raw_description: String,
+    pub amount: f32,
 }
 
 pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConfig) -> Transaction {
