@@ -4,12 +4,14 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct CsvConfig {
+    source: String,
     date_index: usize,
     date_format: String,
     description_index: usize,
     amount_index: usize,
 }
 
+#[derive(Debug)]
 pub struct Transaction {
     date: NaiveDate,
     raw_description: String,
@@ -17,6 +19,7 @@ pub struct Transaction {
 }
 
 pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConfig) -> Transaction {
+    // TODO exit on parse errors? need file path for error message
     Transaction {
         date: NaiveDate::parse_from_str(
             csv_record.get(csv_config.date_index).unwrap_or(""),
@@ -29,7 +32,7 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
             .to_string(),
         amount: csv_record
             .get(csv_config.amount_index)
-            .unwrap_or("0.0")
+            .unwrap_or("")
             .parse()
             .unwrap_or(0.0),
     }
@@ -42,6 +45,7 @@ mod tests {
     #[test]
     fn create_transaction_from_csv_record() {
         let csv_config = CsvConfig {
+            source: "Dave's Bank".to_string(),
             date_index: 1,
             date_format: "%m/%d/%Y".to_string(),
             description_index: 2,
