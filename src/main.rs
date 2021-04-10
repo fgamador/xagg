@@ -41,8 +41,8 @@ fn input_subdir_to_pair(subdir: DirEntry) -> (CsvConfig, impl Iterator<Item = St
 fn input_subdir_to_csv_config(subdir: &DirEntry) -> CsvConfig {
     let mut config_path = subdir.path();
     config_path.push("config.json");
-    let contents = fs::read_to_string(config_path).unwrap();
-    serde_json::from_str(&contents).unwrap()
+    let contents = unwrap_or_exit(fs::read_to_string(&config_path), &config_path);
+    unwrap_or_exit(serde_json::from_str(&contents), &config_path)
 }
 
 fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item = PathBuf> {
