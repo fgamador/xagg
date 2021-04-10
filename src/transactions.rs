@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use csv::StringRecord;
 use serde::Deserialize;
 
@@ -10,12 +11,18 @@ pub struct CsvConfig {
 }
 
 pub struct Transaction {
+    date: NaiveDate,
     raw_description: String,
     amount: f32,
 }
 
 pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConfig) -> Transaction {
     Transaction {
+        date: NaiveDate::parse_from_str(
+            csv_record.get(csv_config.date_index).unwrap_or(""),
+            &csv_config.date_format,
+        )
+        .unwrap_or(NaiveDate::from_ymd(1, 1, 1)),
         raw_description: csv_record
             .get(csv_config.description_index)
             .unwrap_or("")
@@ -50,6 +57,7 @@ mod tests {
 
         let transaction = csv_record_to_transaction(&csv_record, &csv_config);
 
+        assert_eq!(transaction.date, NaiveDate::from_ymd(2020, 2, 12));
         assert_eq!(transaction.raw_description, "ACME FALAFEL");
         assert_eq!(transaction.amount, -12.93);
     }
