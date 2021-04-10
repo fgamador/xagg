@@ -1,8 +1,8 @@
-mod read_files;
+mod file_io;
 mod transactions;
 
 use crate::transactions::csv_record_to_transaction;
-use read_files::*;
+use file_io::*;
 use std::path::PathBuf;
 
 fn print_all_transactions() {
