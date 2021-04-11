@@ -31,12 +31,14 @@ fn _summarize_transactions() {
     }
 }
 
-fn list_descriptions() {
+fn _list_descriptions() {
     let mut descriptions = BTreeMap::new();
     for (_source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
         for csv_record in cvs_records {
             let transaction = csv_record_to_transaction(&csv_record, &csv_config);
-            descriptions.insert(transaction.raw_description, "");
+            if transaction.date >= NaiveDate::from_ymd(2020, 3, 14) {
+                descriptions.insert(transaction.raw_description, "");
+            }
         }
     }
     for (raw_description, description) in &descriptions {
@@ -45,5 +47,5 @@ fn list_descriptions() {
 }
 
 fn main() {
-    list_descriptions();
+    _list_descriptions();
 }
