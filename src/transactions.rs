@@ -40,8 +40,8 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
     }
 }
 
-fn get_longest_registered_prefix(string: &str, registered_prefixes: Trie<u8>) -> Option<String> {
-    registered_prefixes
+fn get_longest_common_prefix(string: &str, common_prefixes: Trie<u8>) -> Option<String> {
+    common_prefixes
         .common_prefix_search(string)
         .iter()
         .map(|utf8_prefix| str::from_utf8(utf8_prefix).unwrap())
@@ -88,7 +88,7 @@ mod tests {
         let trie = builder.build();
 
         assert_eq!(
-            get_longest_registered_prefix("ABCD", trie),
+            get_longest_common_prefix("ABCD", trie),
             Some("ABC".to_string())
         );
     }
