@@ -1,6 +1,9 @@
 use chrono::NaiveDate;
 use csv::StringRecord;
 use serde::Deserialize;
+use std::str;
+use trie_rs::Trie;
+use trie_rs::TrieBuilder;
 
 #[derive(Debug, Deserialize)]
 pub struct CsvConfig {
@@ -37,12 +40,24 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
     }
 }
 
+fn get_longest_registered_prefix(string: &str, registered_prefixes: Trie<u8>) -> Option<String> {
+    let utf8_prefixes = registered_prefixes.common_prefix_search(string);
+    let prefixes: Vec<&str> = utf8_prefixes
+        .iter()
+        .map(|utf8_prefix| str::from_utf8(utf8_prefix).unwrap())
+        .collect();
+    prefixes
+        .iter()
+        .max_by(|prefix1, prefix2| prefix1.len().cmp(&prefix2.len()))
+        .map(|prefix| prefix.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn create_transaction_from_csv_record() {
+    fn creates_transaction_from_csv_record() {
         let csv_config = CsvConfig {
             date_index: 1,
             date_format: "%m/%d/%Y".to_string(),
@@ -62,5 +77,19 @@ mod tests {
         assert_eq!(transaction.date, NaiveDate::from_ymd(2020, 2, 12));
         assert_eq!(transaction.raw_description, "ACME FALAFEL");
         assert_eq!(transaction.amount, -12.93);
+    }
+
+    #[test]
+    fn gets_longest_registered_prefix() {
+        // let matcher = DescriptionMatcher::new( vec![]);
+        // let config = matcher.best_match("");
+        let mut builder = TrieBuilder::new();
+        builder.push("AB");
+        builder.push("ABC");
+        builder.push("ABD");
+        builder.push("ABCE");
+        let trie = builder.build();
+
+        assert_eq!(get_longest_registered_prefix("ABCD", trie), Some("ABC".to_string()));
     }
 }

@@ -4,8 +4,8 @@ mod transactions;
 use crate::transactions::csv_record_to_transaction;
 use chrono::NaiveDate;
 use file_io::*;
-use std::path::PathBuf;
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 
 fn _print_all_transactions() {
     for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
