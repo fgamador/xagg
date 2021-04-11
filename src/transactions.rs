@@ -27,7 +27,7 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
             csv_record.get(csv_config.date_index).unwrap_or(""),
             &csv_config.date_format,
         )
-            .unwrap_or_else(|_| NaiveDate::from_ymd(1, 1, 1)),
+        .unwrap_or_else(|_| NaiveDate::from_ymd(1, 1, 1)),
         raw_description: csv_record
             .get(csv_config.description_index)
             .unwrap_or("")
@@ -41,7 +41,8 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
 }
 
 fn get_longest_registered_prefix(string: &str, registered_prefixes: Trie<u8>) -> Option<String> {
-    registered_prefixes.common_prefix_search(string)
+    registered_prefixes
+        .common_prefix_search(string)
         .iter()
         .map(|utf8_prefix| str::from_utf8(utf8_prefix).unwrap())
         .max_by(|prefix1, prefix2| prefix1.len().cmp(&prefix2.len()))
@@ -86,6 +87,9 @@ mod tests {
         builder.push("ABCE");
         let trie = builder.build();
 
-        assert_eq!(get_longest_registered_prefix("ABCD", trie), Some("ABC".to_string()));
+        assert_eq!(
+            get_longest_registered_prefix("ABCD", trie),
+            Some("ABC".to_string())
+        );
     }
 }
