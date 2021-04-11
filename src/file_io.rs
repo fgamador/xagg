@@ -8,13 +8,16 @@ use std::process::exit;
 
 pub fn read_input(
     dir: PathBuf,
-) -> impl Iterator<Item = (CsvConfig, impl Iterator<Item = StringRecord>)> {
+) -> impl Iterator<Item = (String, CsvConfig, impl Iterator<Item = StringRecord>)> {
     unwrap_or_exit(fs::read_dir(&dir), &dir)
-        .map(move |result| input_subdir_to_pair(unwrap_or_exit(result, &dir)))
+        .map(move |result| input_subdir_to_tuple(unwrap_or_exit(result, &dir)))
 }
 
-fn input_subdir_to_pair(subdir: DirEntry) -> (CsvConfig, impl Iterator<Item = StringRecord>) {
+fn input_subdir_to_tuple(
+    subdir: DirEntry,
+) -> (String, CsvConfig, impl Iterator<Item = StringRecord>) {
     (
+        unwrap_or_exit_debug(subdir.file_name().into_string(), Path::new("")),
         input_subdir_to_csv_config(&subdir),
         csv_file_path_iter_to_csv_record_iter(input_subdir_to_csv_file_path_iter(&subdir)),
     )

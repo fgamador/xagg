@@ -4,7 +4,6 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct CsvConfig {
-    pub source: String, // TODO use dir name instead
     date_index: usize,
     date_format: String,
     description_index: usize,
@@ -45,7 +44,6 @@ mod tests {
     #[test]
     fn create_transaction_from_csv_record() {
         let csv_config = CsvConfig {
-            source: "Dave's Bank".to_string(),
             date_index: 1,
             date_format: "%m/%d/%Y".to_string(),
             description_index: 2,

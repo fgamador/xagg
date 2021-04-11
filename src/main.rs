@@ -7,8 +7,8 @@ use file_io::*;
 use std::path::PathBuf;
 
 fn _print_all_transactions() {
-    for (csv_config, cvs_records) in read_input(PathBuf::from("input")) {
-        println!("*** {} ***", csv_config.source);
+    for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        println!("*** {} ***", source);
         for csv_record in cvs_records {
             println!("{:?}", csv_record_to_transaction(&csv_record, &csv_config));
         }
@@ -17,8 +17,8 @@ fn _print_all_transactions() {
 }
 
 fn summarize_transactions() {
-    for (csv_config, cvs_records) in read_input(PathBuf::from("input")) {
-        println!("{}", csv_config.source);
+    for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        println!("{}", source);
         let mut min_date = NaiveDate::from_ymd(3000, 1, 1);
         let mut max_date = NaiveDate::from_ymd(1000, 1, 1);
         for csv_record in cvs_records {
