@@ -1,4 +1,4 @@
-use crate::transactions::CsvConfig;
+use crate::transactions::{CsvConfig, TransactionClassificationRule};
 use csv::StringRecord;
 use std::fmt::{Debug, Display};
 use std::fs;
@@ -8,14 +8,14 @@ use std::process::exit;
 
 pub fn read_input(
     dir: PathBuf,
-) -> impl Iterator<Item = (String, CsvConfig, impl Iterator<Item = StringRecord>)> {
+) -> impl Iterator<Item=(String, CsvConfig, impl Iterator<Item=StringRecord>)> {
     unwrap_or_exit(fs::read_dir(&dir), &dir)
         .map(move |result| input_subdir_to_tuple(unwrap_or_exit(result, &dir)))
 }
 
 fn input_subdir_to_tuple(
     subdir: DirEntry,
-) -> (String, CsvConfig, impl Iterator<Item = StringRecord>) {
+) -> (String, CsvConfig, impl Iterator<Item=StringRecord>) {
     (
         unwrap_or_exit_debug(subdir.file_name().into_string(), Path::new("")),
         input_subdir_to_csv_config(&subdir),
@@ -30,7 +30,7 @@ fn input_subdir_to_csv_config(subdir: &DirEntry) -> CsvConfig {
     unwrap_or_exit(serde_json::from_str(&contents), &config_path)
 }
 
-fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item = PathBuf> {
+fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item=PathBuf> {
     let subdir_path = subdir.path();
     unwrap_or_exit(fs::read_dir(&subdir_path), &subdir_path).filter_map(move |result| {
         let entry = unwrap_or_exit(result, &subdir_path);
@@ -43,9 +43,9 @@ fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item =
     })
 }
 
-fn csv_file_path_iter_to_csv_record_iter<I>(paths: I) -> impl Iterator<Item = StringRecord>
-where
-    I: Iterator<Item = PathBuf>,
+fn csv_file_path_iter_to_csv_record_iter<I>(paths: I) -> impl Iterator<Item=StringRecord>
+    where
+        I: Iterator<Item=PathBuf>,
 {
     paths
         .map(|path| {
@@ -54,6 +54,15 @@ where
                 .map(move |result| unwrap_or_exit(result, &path))
         })
         .flatten()
+}
+
+pub fn read_rules(
+    dir: PathBuf,
+) -> Vec<TransactionClassificationRule> {
+    let mut rules_path = dir;
+    rules_path.push("rules.json");
+    let contents = unwrap_or_exit(fs::read_to_string(&rules_path), &rules_path);
+    unwrap_or_exit(serde_json::from_str(&contents), &rules_path)
 }
 
 fn unwrap_or_exit<T, E: Display>(result: Result<T, E>, path: &Path) -> T {

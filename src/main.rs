@@ -1,7 +1,7 @@
 mod file_io;
 mod transactions;
 
-use crate::transactions::csv_record_to_transaction;
+use crate::transactions::{csv_record_to_transaction, TransactionClassifier, TransactionClassificationRule};
 use chrono::NaiveDate;
 use file_io::*;
 use std::collections::BTreeMap;
@@ -32,15 +32,25 @@ fn _summarize_transactions() {
 }
 
 fn _list_descriptions() {
+    // let rules = read_rules(PathBuf::from("input"));
+    let rules = vec![TransactionClassificationRule {
+        raw_prefix: "DWB*".to_string(),
+        description: "Doctors without Borders".to_string(),
+        category: "Donation".to_string(),
+    }];
+    let classifier = TransactionClassifier::new(rules);
+
     let mut descriptions = BTreeMap::new();
     for (_source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
         for csv_record in cvs_records {
             let transaction = csv_record_to_transaction(&csv_record, &csv_config);
+            let transaction = classifier.classify_transaction(transaction);
             if transaction.date >= NaiveDate::from_ymd(2020, 3, 14) {
-                descriptions.insert(transaction.raw_description, "");
+                descriptions.insert(transaction.raw_description, transaction.description);
             }
         }
     }
+
     for (raw_description, description) in &descriptions {
         println!("\"{}\" => \"{}\"", raw_description, description);
     }
