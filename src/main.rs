@@ -1,7 +1,9 @@
 mod file_io;
 mod transactions;
 
-use crate::transactions::{csv_record_to_transaction, TransactionClassifier, TransactionClassificationRule};
+use crate::transactions::{
+    csv_record_to_transaction, TransactionClassificationRule, TransactionClassifier,
+};
 use chrono::NaiveDate;
 use file_io::*;
 use std::collections::BTreeMap;
