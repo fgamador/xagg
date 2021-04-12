@@ -1,9 +1,7 @@
 mod file_io;
 mod transactions;
 
-use crate::transactions::{
-    csv_record_to_transaction, TransactionClassificationRule, TransactionClassifier,
-};
+use crate::transactions::{csv_record_to_transaction, TransactionClassifier};
 use chrono::NaiveDate;
 use file_io::*;
 use std::collections::BTreeMap;
@@ -34,12 +32,7 @@ fn _summarize_transactions() {
 }
 
 fn _list_descriptions() {
-    // let rules = read_rules(PathBuf::from("input"));
-    let rules = vec![TransactionClassificationRule {
-        raw_prefix: "DWB*".to_string(),
-        description: "Doctors without Borders".to_string(),
-        category: "Donation".to_string(),
-    }];
+    let rules = read_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
     let mut descriptions = BTreeMap::new();
