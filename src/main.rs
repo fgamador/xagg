@@ -1,10 +1,10 @@
 mod file_io;
 mod transactions;
 
-use crate::transactions::{csv_record_to_transaction, TransactionClassifier};
+use crate::transactions::{csv_record_to_transaction, Transaction, TransactionClassifier};
 use chrono::NaiveDate;
 use file_io::*;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::PathBuf;
 
 fn _print_all_transactions() {
@@ -110,14 +110,14 @@ fn _sum_categories() {
     let rules = read_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
+    let mut grand_total: f32 = 0.0;
     let mut category_sums: HashMap<String, f32> = HashMap::new();
     for (_source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
         for csv_record in cvs_records {
             let transaction = classifier
                 .classify_transaction(csv_record_to_transaction(&csv_record, &csv_config));
-            if transaction.date >= NaiveDate::from_ymd(2020, 3, 14)
-                && transaction.date < NaiveDate::from_ymd(2021, 3, 14)
-            {
+            if !should_exclude_transaction(&transaction) {
+                grand_total += transaction.amount;
                 *category_sums.entry(transaction.category).or_insert(0.0) += transaction.amount;
             }
         }
@@ -129,9 +129,34 @@ fn _sum_categories() {
         .collect();
     category_sums.sort_by(|(_cat1, amt1), (_cat2, amt2)| amt1.partial_cmp(amt2).unwrap());
 
+    println!("Grand total: {:.2}", grand_total);
     for (category, sum) in &category_sums {
-        println!("{}: {:.2}", category, sum);
+        println!("  {}: {:.2}", category, sum);
     }
+}
+
+fn should_exclude_transaction(transaction: &Transaction) -> bool {
+    let exclude_categories: HashSet<&'static str> = ["Dividend", "Salary", "Stock", "Transfer", "Zach"]
+        .iter()
+        .cloned()
+        .collect();
+    let exclude_positive_categories: HashSet<&'static str> =
+        ["Travel", "Unknown"].iter().cloned().collect();
+
+    if transaction.date < NaiveDate::from_ymd(2020, 3, 14) {
+        return true;
+    }
+    if transaction.date >= NaiveDate::from_ymd(2021, 3, 14) {
+        return true;
+    }
+    if exclude_categories.contains(&*transaction.category) {
+        return true;
+    }
+    if transaction.amount > 0.0 && exclude_positive_categories.contains(&*transaction.category) {
+        return true;
+    }
+
+    false
 }
 
 fn main() {
