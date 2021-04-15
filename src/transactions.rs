@@ -80,6 +80,9 @@ impl TransactionClassifier {
                 transaction.description = rule.description.clone();
                 transaction.category = rule.category.clone();
             }
+        } else {
+            transaction.description = "Unknown".to_string();
+            transaction.category = "Unknown".to_string();
         }
         transaction
     }
@@ -154,5 +157,25 @@ mod tests {
 
         assert_eq!(transaction.description, "Doctors without Borders");
         assert_eq!(transaction.category, "Donation");
+    }
+
+    #[test]
+    fn transaction_classification_handles_empty_raw_description() {
+        let classifier = TransactionClassifier::new(vec![TransactionClassificationRule {
+            raw_prefix: "DWB*".to_string(),
+            description: "Doctors without Borders".to_string(),
+            category: "Donation".to_string(),
+        }]);
+
+        let transaction = classifier.classify_transaction(Transaction {
+            date: NaiveDate::from_ymd(1, 1, 1),
+            raw_description: "".to_string(),
+            amount: 0.0,
+            description: "".to_string(),
+            category: "".to_string(),
+        });
+
+        assert_eq!(transaction.description, "Unknown");
+        assert_eq!(transaction.category, "Unknown");
     }
 }

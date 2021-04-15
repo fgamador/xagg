@@ -4,7 +4,7 @@ mod transactions;
 use crate::transactions::{csv_record_to_transaction, TransactionClassifier};
 use chrono::NaiveDate;
 use file_io::*;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
 fn _print_all_transactions() {
@@ -51,6 +51,89 @@ fn _list_descriptions() {
     }
 }
 
+fn _print_draft_rules() {
+    let mut descriptions = BTreeMap::new();
+    for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        if source == "PayPal" {
+            for csv_record in cvs_records {
+                let transaction = csv_record_to_transaction(&csv_record, &csv_config);
+                if transaction.date >= NaiveDate::from_ymd(2020, 3, 14) {
+                    descriptions.insert(transaction.raw_description, transaction.description);
+                }
+            }
+        }
+    }
+
+    println!("[");
+    for (raw_description, _description) in &descriptions {
+        println!(
+            r#"  {{
+    "raw_prefix": "{}",
+    "description": "{}",
+    "category": "TODO"
+  }},"#,
+            raw_description, raw_description
+        );
+    }
+    println!("]");
+}
+
+fn _align_checking_and_paypal() {
+    let mut tuples = vec![];
+    for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        if source == "PayPal" || source == "WSECU Checking" {
+            for csv_record in cvs_records {
+                let transaction = csv_record_to_transaction(&csv_record, &csv_config);
+                if transaction.date >= NaiveDate::from_ymd(2020, 3, 14)
+                    && transaction.date < NaiveDate::from_ymd(2021, 3, 14)
+                {
+                    tuples.push((
+                        transaction.date,
+                        transaction.raw_description,
+                        transaction.amount,
+                    ));
+                }
+            }
+        }
+    }
+
+    tuples.sort_by(|(_date1, desc1, _amt1), (_date2, desc2, _amt2)| {
+        desc1.to_lowercase().cmp(&desc2.to_lowercase())
+    });
+
+    for (date, description, amount) in tuples {
+        println!("{}, \"{}\", {}", date, description, amount);
+    }
+}
+
+fn _sum_categories() {
+    let rules = read_rules(PathBuf::from("input"));
+    let classifier = TransactionClassifier::new(rules);
+
+    let mut category_sums: HashMap<String, f32> = HashMap::new();
+    for (_source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        for csv_record in cvs_records {
+            let transaction = classifier
+                .classify_transaction(csv_record_to_transaction(&csv_record, &csv_config));
+            if transaction.date >= NaiveDate::from_ymd(2020, 3, 14)
+                && transaction.date < NaiveDate::from_ymd(2021, 3, 14)
+            {
+                *category_sums.entry(transaction.category).or_insert(0.0) += transaction.amount;
+            }
+        }
+    }
+
+    let mut category_sums: Vec<(String, f32)> = category_sums
+        .iter()
+        .map(|(cat, amt)| (cat.clone(), *amt))
+        .collect();
+    category_sums.sort_by(|(_cat1, amt1), (_cat2, amt2)| amt1.partial_cmp(amt2).unwrap());
+
+    for (category, sum) in &category_sums {
+        println!("{}: {:.2}", category, sum);
+    }
+}
+
 fn main() {
-    _list_descriptions();
+    _sum_categories();
 }
