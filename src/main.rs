@@ -135,11 +135,84 @@ fn _sum_categories() {
     }
 }
 
+type TransactionNode = (String, Transaction);
+type RetailerNode = (String, f32, Vec<TransactionNode>);
+type CategoryNode = (String, f32, HashMap<String, RetailerNode>);
+type RootNode = (String, f32, HashMap<String, CategoryNode>);
+
+fn generate_icicle_chart_data() {
+    let mut root_node = gather_node_tree();
+    sum_totals(&mut root_node);
+
+    for (_category, category_node) in &mut root_node.2 {
+        for (_retailer, _retailer_node) in &mut category_node.2 {
+            // retailer_node.2.sort_by(|trans_node1, trans_node2| {
+            //     trans_node1
+            //         .1
+            //         .amount
+            //         .partial_cmp(&trans_node2.1.amount)
+            //         .unwrap()
+            // });
+        }
+    }
+
+    // TODO
+}
+
+fn gather_node_tree() -> RootNode {
+    let rules = read_rules(PathBuf::from("input"));
+    let classifier = TransactionClassifier::new(rules);
+
+    let mut root_node: RootNode = ("Total".to_string(), 0.0, HashMap::new());
+
+    for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        for csv_record in cvs_records {
+            let transaction = classifier
+                .classify_transaction(csv_record_to_transaction(&csv_record, &csv_config));
+            if !should_exclude_transaction(&transaction) {
+                let category_node = root_node
+                    .2
+                    .entry(transaction.category.clone())
+                    .or_insert((transaction.category.clone(), 0.0, HashMap::new()));
+                let retailer_node = category_node
+                    .2
+                    .entry(transaction.description.clone())
+                    .or_insert((transaction.description.clone(), 0.0, vec![]));
+                retailer_node.2.push((source.clone(), transaction));
+            }
+        }
+    }
+
+    root_node
+}
+
+fn sum_totals(root_node: &mut RootNode) {
+    for (_category, category_node) in &mut root_node.2 {
+        for (_retailer, retailer_node) in &mut category_node.2 {
+            retailer_node.1 = retailer_node
+                .2
+                .iter()
+                .fold(0.0, |sum, trans_node| sum + trans_node.1.amount);
+        }
+
+        category_node.1 = category_node
+            .2
+            .values()
+            .fold(0.0, |sum, retailer_node| sum + retailer_node.1);
+    }
+
+    root_node.1 = root_node
+        .2
+        .values()
+        .fold(0.0, |sum, category_node| sum + category_node.1);
+}
+
 fn should_exclude_transaction(transaction: &Transaction) -> bool {
-    let exclude_categories: HashSet<&'static str> = ["Dividend", "Salary", "Stock", "Transfer", "Zach"]
-        .iter()
-        .cloned()
-        .collect();
+    let exclude_categories: HashSet<&'static str> =
+        ["Dividend", "Salary", "Stock", "Transfer", "Zach"]
+            .iter()
+            .cloned()
+            .collect();
     let exclude_positive_categories: HashSet<&'static str> =
         ["Travel", "Unknown"].iter().cloned().collect();
 
@@ -160,5 +233,5 @@ fn should_exclude_transaction(transaction: &Transaction) -> bool {
 }
 
 fn main() {
-    _sum_categories();
+    generate_icicle_chart_data();
 }
