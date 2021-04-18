@@ -4,6 +4,7 @@ mod transactions;
 use crate::transactions::{csv_record_to_transaction, Transaction, TransactionClassifier};
 use chrono::NaiveDate;
 use file_io::*;
+use serde::Serialize;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::PathBuf;
 
@@ -135,76 +136,94 @@ fn _sum_categories() {
     }
 }
 
-type TransactionNode = (String, Transaction);
-type RetailerNode = (String, f32, Vec<TransactionNode>);
-type CategoryNode = (String, f32, HashMap<String, RetailerNode>);
-type RootNode = (String, f32, HashMap<String, CategoryNode>);
-
-fn generate_icicle_chart_data() {
-    let mut root_node = gather_node_tree();
-    sum_totals(&mut root_node);
-
-    for (_category, category_node) in &mut root_node.2 {
-        for (_retailer, _retailer_node) in &mut category_node.2 {
-            // retailer_node.2.sort_by(|trans_node1, trans_node2| {
-            //     trans_node1
-            //         .1
-            //         .amount
-            //         .partial_cmp(&trans_node2.1.amount)
-            //         .unwrap()
-            // });
-        }
-    }
-
-    // TODO
+#[derive(Debug, Serialize)]
+pub struct TransactionDataNode {
+    name: String,
+    value: u32,
 }
 
-fn gather_node_tree() -> RootNode {
+#[derive(Debug, Serialize)]
+pub struct DescriptionDataNode {
+    name: String,
+    children: Vec<TransactionDataNode>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CategoryDataNode {
+    name: String,
+    children: Vec<DescriptionDataNode>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct RootDataNode {
+    name: String,
+    children: Vec<CategoryDataNode>,
+}
+
+type TransactionDataNodes = Vec<TransactionDataNode>;
+type DescriptionMap = HashMap<String, TransactionDataNodes>;
+type CategoryMap = HashMap<String, DescriptionMap>;
+
+fn generate_icicle_chart_data() {
+    let category_map = gather_category_map();
+    let category_data_nodes = categories_to_data_nodes(category_map);
+    let root_data_node = RootDataNode {
+        name: "Spending".to_string(),
+        children: category_data_nodes,
+    };
+    println!("{}", serde_json::to_string(&root_data_node).unwrap());
+}
+
+fn gather_category_map() -> CategoryMap {
     let rules = read_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
-    let mut root_node: RootNode = ("Total".to_string(), 0.0, HashMap::new());
+    let mut categories: CategoryMap = HashMap::new();
 
     for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
         for csv_record in cvs_records {
             let transaction = classifier
                 .classify_transaction(csv_record_to_transaction(&csv_record, &csv_config));
             if !should_exclude_transaction(&transaction) {
-                let category_node = root_node
-                    .2
+                let descriptions = categories
                     .entry(transaction.category.clone())
-                    .or_insert((transaction.category.clone(), 0.0, HashMap::new()));
-                let retailer_node = category_node
-                    .2
+                    .or_insert(HashMap::new());
+                let transactions = descriptions
                     .entry(transaction.description.clone())
-                    .or_insert((transaction.description.clone(), 0.0, vec![]));
-                retailer_node.2.push((source.clone(), transaction));
+                    .or_insert(vec![]);
+                if transaction.amount <= 0.0 {
+                    transactions.push(transaction_to_data_node(&source, transaction));
+                }
             }
         }
     }
 
-    root_node
+    categories
 }
 
-fn sum_totals(root_node: &mut RootNode) {
-    for (_category, category_node) in &mut root_node.2 {
-        for (_retailer, retailer_node) in &mut category_node.2 {
-            retailer_node.1 = retailer_node
-                .2
-                .iter()
-                .fold(0.0, |sum, trans_node| sum + trans_node.1.amount);
-        }
-
-        category_node.1 = category_node
-            .2
-            .values()
-            .fold(0.0, |sum, retailer_node| sum + retailer_node.1);
+fn transaction_to_data_node(source: &str, transaction: Transaction) -> TransactionDataNode {
+    TransactionDataNode {
+        name: format!("{} ({}, {})", transaction.raw_description, transaction.date, source),
+        value: -transaction.amount.round() as u32,
     }
+}
 
-    root_node.1 = root_node
-        .2
-        .values()
-        .fold(0.0, |sum, category_node| sum + category_node.1);
+fn categories_to_data_nodes(category_map: CategoryMap) -> Vec<CategoryDataNode> {
+    let mut category_data_nodes = vec![];
+    for (category, description_map) in category_map {
+        let mut category_data_node = CategoryDataNode {
+            name: category,
+            children: vec![],
+        };
+        for (description, transaction_data_nodes) in description_map {
+            category_data_node.children.push(DescriptionDataNode {
+                name: description,
+                children: transaction_data_nodes,
+            });
+        }
+        category_data_nodes.push(category_data_node);
+    }
+    category_data_nodes
 }
 
 fn should_exclude_transaction(transaction: &Transaction) -> bool {
