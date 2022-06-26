@@ -5,7 +5,7 @@ use crate::transactions::{csv_record_to_transaction, Transaction, TransactionCla
 use chrono::NaiveDate;
 use file_io::*;
 use serde::Serialize;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
 
 #[derive(Debug, Serialize)]
@@ -37,7 +37,8 @@ type DescriptionMap = HashMap<String, TransactionDataNodes>;
 type CategoryMap = HashMap<String, DescriptionMap>;
 
 fn main() {
-    generate_icicle_chart_data();
+    _list_unrecognized_descriptions();
+    // generate_icicle_chart_data();
 }
 
 fn generate_icicle_chart_data() {
@@ -111,10 +112,10 @@ fn should_exclude_transaction(transaction: &Transaction) -> bool {
     let exclude_positive_categories: HashSet<&'static str> =
         ["Travel", "Unknown"].iter().cloned().collect();
 
-    if transaction.date < NaiveDate::from_ymd(2020, 3, 14) {
+    if transaction.date < NaiveDate::from_ymd(2021, 6, 1) {
         return true;
     }
-    if transaction.date >= NaiveDate::from_ymd(2021, 3, 14) {
+    if transaction.date >= NaiveDate::from_ymd(2022, 6, 1) {
         return true;
     }
     if exclude_categories.contains(&*transaction.category) {
@@ -125,6 +126,26 @@ fn should_exclude_transaction(transaction: &Transaction) -> bool {
     }
 
     false
+}
+
+fn _list_unrecognized_descriptions() {
+    let rules = read_rules(PathBuf::from("input"));
+    let classifier = TransactionClassifier::new(rules);
+
+    let mut raw_descriptions = BTreeSet::new();
+    for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        for csv_record in cvs_records {
+            let transaction = csv_record_to_transaction(&csv_record, &csv_config);
+            let transaction = classifier.classify_transaction(transaction);
+            if !should_exclude_transaction(&transaction) && transaction.category == "Unknown" {
+                raw_descriptions.insert((source.clone(), transaction.raw_description));
+            }
+        }
+    }
+
+    for (source, raw_description) in &raw_descriptions {
+        println!("{}: {}", source, raw_description);
+    }
 }
 
 fn _print_all_transactions() {
