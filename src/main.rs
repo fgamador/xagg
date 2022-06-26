@@ -203,7 +203,7 @@ fn gather_category_map() -> CategoryMap {
 
 fn transaction_to_data_node(source: &str, transaction: Transaction) -> TransactionDataNode {
     TransactionDataNode {
-        name: format!("{} ({}, {})", transaction.raw_description, transaction.date, source),
+        name: format!("{}, {},", transaction.date, source),
         value: -transaction.amount.round() as u32,
     }
 }
