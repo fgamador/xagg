@@ -43,6 +43,7 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
         raw_description: csv_record
             .get(csv_config.description_index)
             .unwrap_or("")
+            .trim()
             .to_string(),
         amount: parse_csv_amount(csv_record, csv_config),
         description: "".to_string(),
