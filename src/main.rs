@@ -115,12 +115,12 @@ fn should_exclude_transaction(transaction: &Transaction) -> bool {
     let exclude_positive_categories: HashSet<&'static str> =
         ["Travel", "Unknown"].iter().cloned().collect();
 
-    if transaction.date < NaiveDate::from_ymd(2021, 6, 1) {
-        return true;
-    }
-    if transaction.date >= NaiveDate::from_ymd(2022, 6, 1) {
-        return true;
-    }
+    // if transaction.date < NaiveDate::from_ymd(2021, 6, 1) {
+    //     return true;
+    // }
+    // if transaction.date >= NaiveDate::from_ymd(2022, 6, 1) {
+    //     return true;
+    // }
     if exclude_categories.contains(&*transaction.category) {
         return true;
     }
