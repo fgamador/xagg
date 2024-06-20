@@ -91,8 +91,11 @@ impl TransactionClassifier {
                 transaction.description = rule.description.clone();
                 transaction.category = rule.category.clone();
             }
-        } else {
+        } else if transaction.raw_description.is_empty() {
             transaction.description = "Unknown".to_string();
+            transaction.category = "Unknown".to_string();
+        } else {
+            transaction.description = transaction.raw_description.clone();
             transaction.category = "Unknown".to_string();
         }
         transaction
@@ -119,6 +122,7 @@ mod tests {
             date_format: "%m/%d/%Y".to_string(),
             description_index: 2,
             amount_index: 4,
+            amount_is_debit: false,
         };
         let csv_record = StringRecord::from(vec![
             "ignore1",
@@ -168,6 +172,26 @@ mod tests {
 
         assert_eq!(transaction.description, "Doctors without Borders");
         assert_eq!(transaction.category, "Donation");
+    }
+
+    #[test]
+    fn transaction_classification_retains_unrecognized_raw_description() {
+        let classifier = TransactionClassifier::new(vec![TransactionClassificationRule {
+            raw_prefix: "DWB*".to_string(),
+            description: "Doctors without Borders".to_string(),
+            category: "Donation".to_string(),
+        }]);
+
+        let transaction = classifier.classify_transaction(Transaction {
+            date: NaiveDate::from_ymd(1, 1, 1),
+            raw_description: "ACME FALAFEL".to_string(),
+            amount: 0.0,
+            description: "".to_string(),
+            category: "".to_string(),
+        });
+
+        assert_eq!(transaction.description, "ACME FALAFEL");
+        assert_eq!(transaction.category, "Unknown");
     }
 
     #[test]
