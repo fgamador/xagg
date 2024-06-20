@@ -12,6 +12,8 @@ pub struct CsvConfig {
     date_format: String,
     description_index: usize,
     amount_index: usize,
+    #[serde(default)]
+    amount_is_debit: bool,
 }
 
 #[derive(Debug)]
@@ -37,18 +39,27 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
             csv_record.get(csv_config.date_index).unwrap_or(""),
             &csv_config.date_format,
         )
-        .unwrap_or_else(|_| NaiveDate::from_ymd(1, 1, 1)),
+            .unwrap_or_else(|_| NaiveDate::from_ymd(1, 1, 1)),
         raw_description: csv_record
             .get(csv_config.description_index)
             .unwrap_or("")
             .to_string(),
-        amount: csv_record
-            .get(csv_config.amount_index)
-            .unwrap_or("")
-            .parse()
-            .unwrap_or(0.0),
+        amount: parse_csv_amount(csv_record, csv_config),
         description: "".to_string(),
         category: "".to_string(),
+    }
+}
+
+fn parse_csv_amount(csv_record: &StringRecord, csv_config: &CsvConfig) -> f32 {
+    let amount = csv_record
+        .get(csv_config.amount_index)
+        .unwrap_or("")
+        .parse()
+        .unwrap_or(0.0);
+    if csv_config.amount_is_debit {
+        -amount
+    } else {
+        amount
     }
 }
 
