@@ -108,7 +108,7 @@ fn categories_to_data_nodes(category_map: CategoryMap) -> Vec<CategoryDataNode> 
 
 fn should_exclude_transaction(transaction: &Transaction) -> bool {
     let exclude_categories: HashSet<&'static str> =
-        ["Dividend", "Investment", "Salary", "Tax", "Transfer", "Zach"]
+        ["Dividend", "Investment", "Salary", "Tax", "Transfer"]
             .iter()
             .cloned()
             .collect();
