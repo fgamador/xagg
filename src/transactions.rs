@@ -52,11 +52,14 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
 }
 
 fn parse_csv_amount(csv_record: &StringRecord, csv_config: &CsvConfig) -> f32 {
-    let amount = csv_record
+    let amount_str = csv_record
         .get(csv_config.amount_index)
-        .unwrap_or("")
+        .unwrap()
+        .replace(',', "");
+    let amount_str = if amount_str.is_empty() { "0.0".to_string() } else { amount_str };
+    let amount: f32 = amount_str
         .parse()
-        .unwrap_or(0.0);
+        .unwrap();
     if csv_config.amount_is_debit {
         -amount
     } else {
