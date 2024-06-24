@@ -7,6 +7,7 @@ use file_io::*;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
+use titlecase::titlecase;
 
 #[derive(Debug, Serialize)]
 pub struct TransactionDataNode {
@@ -38,6 +39,7 @@ type CategoryMap = HashMap<String, DescriptionMap>;
 
 fn main() {
     generate_icicle_chart_data();
+    // _print_draft_rules_for_unrecognized_descriptions();
     // _print_categories();
     // _sum_categories();
     // _list_unrecognized_descriptions();
@@ -108,17 +110,17 @@ fn categories_to_data_nodes(category_map: CategoryMap) -> Vec<CategoryDataNode> 
 
 fn should_exclude_transaction(transaction: &Transaction) -> bool {
     let exclude_categories: HashSet<&'static str> =
-        ["Dividend", "Investment", "Salary", "Tax", "Transfer"]
+        ["Dividend", "Investment", "Reimbursed", "Salary", "Tax", "Transfer"]
             .iter()
             .cloned()
             .collect();
     let exclude_positive_categories: HashSet<&'static str> =
         ["Travel", "Unknown"].iter().cloned().collect();
 
-    // if transaction.date < NaiveDate::from_ymd(2021, 6, 1) {
-    //     return true;
-    // }
-    // if transaction.date >= NaiveDate::from_ymd(2022, 6, 1) {
+    if transaction.date < NaiveDate::from_ymd(2024, 1, 1) {
+        return true;
+    }
+    // if transaction.date >= NaiveDate::from_ymd(2024, 1, 1) {
     //     return true;
     // }
     if exclude_categories.contains(&*transaction.category) {
@@ -131,7 +133,82 @@ fn should_exclude_transaction(transaction: &Transaction) -> bool {
     false
 }
 
+fn _print_draft_rules_for_unrecognized_descriptions() {
+    let (_grand_total, description_sums) = get_unrecognized_description_sums();
+
+    println!("[");
+    for ((source, raw_description), sum) in &description_sums {
+        if (*sum).abs() < 90.0 { continue; }
+
+        println!(
+            r#"  {{
+    "sum": "{}",
+    "source": "{}",
+    "raw_prefix": "{}",
+    "description": "{}",
+    "category": "Unknown"
+  }},"#,
+            sum, source, raw_description, titlecase(strip_unwanted_prefix(raw_description))
+        );
+    }
+    println!("]");
+}
+
+fn strip_unwanted_prefix(raw_description: &String) -> &str {
+    let unwanted_prefixes = vec!["SP ", "SQ *", "TST* "];
+    for prefix in unwanted_prefixes
+    {
+        if let Some(stripped) = raw_description.strip_prefix(prefix)
+        {
+            return stripped;
+        }
+    }
+    raw_description
+}
+
+fn _sum_unrecognized_descriptions() {
+    let (grand_total, description_sums) = get_unrecognized_description_sums();
+
+    println!("Grand total: {:.2}", grand_total);
+    for ((source, description), sum) in &description_sums {
+        println!("  {} / {}: {:.2}", source, description, sum);
+    }
+}
+
+fn get_unrecognized_description_sums() -> (f32, Vec<((String, String), f32)>) {
+    let rules = read_rules(PathBuf::from("input"));
+    let classifier = TransactionClassifier::new(rules);
+
+    let mut grand_total: f32 = 0.0;
+    let mut description_sums: HashMap<(String, String), f32> = HashMap::new();
+    for (source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
+        for csv_record in cvs_records {
+            let transaction = csv_record_to_transaction(&csv_record, &csv_config);
+            let transaction = classifier.classify_transaction(transaction);
+            if !should_exclude_transaction(&transaction) && transaction.category == "Unknown" {
+                grand_total += transaction.amount;
+                *description_sums.entry((source.clone(), transaction.raw_description)).or_insert(0.0) += transaction.amount;
+            }
+        }
+    }
+
+    let mut description_sums: Vec<((String, String), f32)> = description_sums
+        .iter()
+        .map(|(desc, amt)| (desc.clone(), *amt))
+        .collect();
+    description_sums.sort_by(|(_desc1, amt1), (_desc2, amt2)| amt1.partial_cmp(amt2).unwrap());
+    (grand_total, description_sums)
+}
+
 fn _list_unrecognized_descriptions() {
+    let raw_descriptions = get_unrecognized_descriptions();
+
+    for (source, raw_description) in &raw_descriptions {
+        println!("{}: {}", source, raw_description);
+    }
+}
+
+fn get_unrecognized_descriptions() -> BTreeSet<(String, String)> {
     let rules = read_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
@@ -145,41 +222,7 @@ fn _list_unrecognized_descriptions() {
             }
         }
     }
-
-    for (source, raw_description) in &raw_descriptions {
-        println!("{}: {}", source, raw_description);
-    }
-}
-
-fn _sum_unrecognized_descriptions() {
-    let rules = read_rules(PathBuf::from("input"));
-    let classifier = TransactionClassifier::new(rules);
-
-    let mut grand_total: f32 = 0.0;
-    let mut description_sums: HashMap<String, f32> = HashMap::new();
-    for (_source, csv_config, cvs_records) in read_input(PathBuf::from("input")) {
-        for csv_record in cvs_records {
-            let transaction = csv_record_to_transaction(&csv_record, &csv_config);
-            let transaction = classifier.classify_transaction(transaction);
-            if !should_exclude_transaction(&transaction) && transaction.category == "Unknown" {
-                grand_total += transaction.amount;
-                *description_sums.entry(transaction.raw_description).or_insert(0.0) += transaction.amount;
-            }
-        }
-    }
-
-    let mut description_sums: Vec<(String, f32)> = description_sums
-        .iter()
-        .map(|(desc, amt)| (desc.clone(), *amt))
-        .collect();
-    description_sums.sort_by(|(_desc1, amt1), (_desc2, amt2)| amt1.partial_cmp(amt2).unwrap());
-
-    println!("Grand total: {:.2}", grand_total);
-    for (description, sum) in &description_sums {
-        if sum.abs() >= 200.0 {
-            println!("  {}: {:.2}", description, sum);
-        }
-    }
+    raw_descriptions
 }
 
 fn _print_all_transactions() {
