@@ -2,7 +2,6 @@ use serde::Deserialize;
 use trie_rs::{Trie, TrieBuilder};
 use std::collections::HashMap;
 use std::str;
-use chrono::NaiveDate;
 use crate::transactions::Transaction;
 
 #[derive(Debug, Deserialize)]
