@@ -59,7 +59,7 @@ fn generate_icicle_chart_data() {
 }
 
 fn gather_category_map() -> CategoryMap {
-    let rules = read_rules(PathBuf::from("input"));
+    let rules = read_classification_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
     let mut categories: CategoryMap = HashMap::new();
@@ -178,7 +178,7 @@ fn _sum_unrecognized_descriptions() {
 }
 
 fn get_unrecognized_description_sums() -> (f32, Vec<((String, String), f32)>) {
-    let rules = read_rules(PathBuf::from("input"));
+    let rules = read_classification_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
     let mut grand_total: f32 = 0.0;
@@ -211,7 +211,7 @@ fn _list_unrecognized_descriptions() {
 }
 
 fn get_unrecognized_descriptions() -> BTreeSet<(String, String)> {
-    let rules = read_rules(PathBuf::from("input"));
+    let rules = read_classification_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
     let mut raw_descriptions = BTreeSet::new();
@@ -252,7 +252,7 @@ fn _summarize_transactions() {
 }
 
 fn _list_descriptions() {
-    let rules = read_rules(PathBuf::from("input"));
+    let rules = read_classification_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
     let mut descriptions = BTreeMap::new();
@@ -327,7 +327,7 @@ fn _align_checking_and_paypal() {
 }
 
 fn _print_categories() {
-    let rules = read_rules(PathBuf::from("input"));
+    let rules = read_classification_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
     let mut categories = BTreeSet::new();
@@ -345,7 +345,7 @@ fn _print_categories() {
 }
 
 fn _sum_categories() {
-    let rules = read_rules(PathBuf::from("input"));
+    let rules = read_classification_rules(PathBuf::from("input"));
     let classifier = TransactionClassifier::new(rules);
 
     let mut grand_total: f32 = 0.0;

@@ -62,7 +62,7 @@ where
         .flatten()
 }
 
-pub fn read_rules(dir: PathBuf) -> Vec<TransactionClassificationRule> {
+pub fn read_classification_rules(dir: PathBuf) -> Vec<TransactionClassificationRule> {
     let mut rules_path = dir;
     rules_path.push("rules.json");
     let contents = unwrap_or_exit(fs::read_to_string(&rules_path), &rules_path);
