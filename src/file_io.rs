@@ -24,9 +24,15 @@ pub fn read_input(
 fn input_subdir_to_tuple(
     subdir: DirEntry,
 ) -> (String, CsvConfig, impl Iterator<Item=StringRecord>) {
+    let csv_config = input_subdir_to_csv_config(&subdir);
+    let source = if !csv_config.source_alias.is_empty() {
+        csv_config.source_alias.clone()
+    } else {
+        unwrap_or_exit_debug(subdir.file_name().into_string(), &subdir.path())
+    };
     (
-        unwrap_or_exit_debug(subdir.file_name().into_string(), Path::new("")),
-        input_subdir_to_csv_config(&subdir),
+        source,
+        csv_config,
         csv_file_path_iter_to_csv_record_iter(input_subdir_to_csv_file_path_iter(&subdir)),
     )
 }
