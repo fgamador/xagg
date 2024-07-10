@@ -1,10 +1,11 @@
-use crate::transactions::{CsvConfig, TransactionClassificationRule};
+use crate::transactions::CsvConfig;
 use csv::StringRecord;
 use std::fmt::{Debug, Display};
 use std::fs;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
 use std::process::exit;
+use crate::transaction_classification::TransactionClassificationRule;
 
 pub fn read_input(
     dir: PathBuf,

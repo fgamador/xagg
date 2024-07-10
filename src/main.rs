@@ -1,13 +1,15 @@
 mod file_io;
 mod transactions;
+mod transaction_classification;
 
-use crate::transactions::{csv_record_to_transaction, Transaction, TransactionClassifier};
+use crate::transactions::{csv_record_to_transaction, Transaction};
 use chrono::NaiveDate;
 use file_io::*;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
 use titlecase::titlecase;
+use transaction_classification::TransactionClassifier;
 
 #[derive(Debug, Serialize)]
 pub struct TransactionDataNode {
@@ -117,12 +119,12 @@ fn should_exclude_transaction(transaction: &Transaction) -> bool {
     let exclude_positive_categories: HashSet<&'static str> =
         ["Travel", "Unknown"].iter().cloned().collect();
 
-    if transaction.date < NaiveDate::from_ymd(2024, 1, 1) {
+    if transaction.date < NaiveDate::from_ymd(2023, 1, 1) {
         return true;
     }
-    // if transaction.date >= NaiveDate::from_ymd(2024, 1, 1) {
-    //     return true;
-    // }
+    if transaction.date >= NaiveDate::from_ymd(2024, 1, 1) {
+        return true;
+    }
     if exclude_categories.contains(&*transaction.category) {
         return true;
     }
