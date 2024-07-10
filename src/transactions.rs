@@ -24,16 +24,15 @@ pub struct Transaction {
 }
 
 pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConfig) -> Transaction {
-    // TODO exit on parse errors? need file path for error message
     Transaction {
         date: NaiveDate::parse_from_str(
-            csv_record.get(csv_config.date_index).unwrap_or(""),
+            csv_record.get(csv_config.date_index).unwrap(),
             &csv_config.date_format,
         )
-            .unwrap_or_else(|_| NaiveDate::from_ymd(1, 1, 1)),
+            .unwrap(),
         raw_description: csv_record
             .get(csv_config.description_index)
-            .unwrap_or("")
+            .unwrap()
             .trim()
             .to_string(),
         amount: parse_csv_amount(csv_record, csv_config),
