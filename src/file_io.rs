@@ -1,15 +1,17 @@
-use crate::transactions::CsvConfig;
-use csv::StringRecord;
 use std::fmt::{Debug, Display};
 use std::fs;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
 use std::process::exit;
+
+use csv::StringRecord;
+
 use crate::transaction_classification::TransactionClassificationRule;
+use crate::transactions::CsvConfig;
 
 pub fn read_input(
     dir: PathBuf,
-) -> impl Iterator<Item = (String, CsvConfig, impl Iterator<Item = StringRecord>)> {
+) -> impl Iterator<Item=(String, CsvConfig, impl Iterator<Item=StringRecord>)> {
     unwrap_or_exit(fs::read_dir(&dir), &dir)
         .map(move |result| unwrap_or_exit(result, &dir))
         .filter(|entry| {
@@ -21,7 +23,7 @@ pub fn read_input(
 
 fn input_subdir_to_tuple(
     subdir: DirEntry,
-) -> (String, CsvConfig, impl Iterator<Item = StringRecord>) {
+) -> (String, CsvConfig, impl Iterator<Item=StringRecord>) {
     (
         unwrap_or_exit_debug(subdir.file_name().into_string(), Path::new("")),
         input_subdir_to_csv_config(&subdir),
@@ -36,7 +38,7 @@ fn input_subdir_to_csv_config(subdir: &DirEntry) -> CsvConfig {
     unwrap_or_exit(serde_json::from_str(&contents), &config_path)
 }
 
-fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item = PathBuf> {
+fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item=PathBuf> {
     let subdir_path = subdir.path();
     unwrap_or_exit(fs::read_dir(&subdir_path), &subdir_path).filter_map(move |result| {
         let entry = unwrap_or_exit(result, &subdir_path);
@@ -49,9 +51,9 @@ fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item =
     })
 }
 
-fn csv_file_path_iter_to_csv_record_iter<I>(paths: I) -> impl Iterator<Item = StringRecord>
+fn csv_file_path_iter_to_csv_record_iter<I>(paths: I) -> impl Iterator<Item=StringRecord>
 where
-    I: Iterator<Item = PathBuf>,
+    I: Iterator<Item=PathBuf>,
 {
     paths
         .map(|path| {

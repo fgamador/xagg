@@ -1,7 +1,9 @@
-use serde::Deserialize;
-use trie_rs::{Trie, TrieBuilder};
 use std::collections::HashMap;
 use std::str;
+
+use serde::Deserialize;
+use trie_rs::{Trie, TrieBuilder};
+
 use crate::transactions::Transaction;
 
 #[derive(Debug, Deserialize)]
@@ -62,7 +64,8 @@ fn get_longest_common_prefix(string: &str, prefixes: &Trie<u8>) -> Option<String
 #[cfg(test)]
 mod tests {
     use chrono::NaiveDate;
-use super::*;
+
+    use super::*;
 
     #[test]
     fn gets_longest_common_prefix() {

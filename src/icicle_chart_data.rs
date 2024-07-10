@@ -1,7 +1,9 @@
 use std::collections::{HashMap, HashSet};
-use chrono::NaiveDate;
 use std::path::PathBuf;
+
+use chrono::NaiveDate;
 use serde::Serialize;
+
 use crate::file_io::{read_classification_rules, read_input};
 use crate::transaction_classification::TransactionClassifier;
 use crate::transactions::{csv_record_to_transaction, Transaction};

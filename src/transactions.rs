@@ -1,7 +1,8 @@
+use std::str;
+
 use chrono::NaiveDate;
 use csv::StringRecord;
 use serde::Deserialize;
-use std::str;
 
 #[derive(Debug, Deserialize)]
 pub struct CsvConfig {

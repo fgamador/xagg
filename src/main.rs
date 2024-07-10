@@ -1,8 +1,8 @@
-mod file_io;
-mod transactions;
-mod transaction_classification;
-mod icicle_chart_data;
 mod classification_extras;
+mod file_io;
+mod icicle_chart_data;
+mod transaction_classification;
+mod transactions;
 
 fn main() {
     icicle_chart_data::generate_icicle_chart_data();

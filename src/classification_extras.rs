@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
-use std::path::PathBuf;
-use chrono::NaiveDate;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::path::PathBuf;
+
+use chrono::NaiveDate;
+
 use crate::file_io::{read_classification_rules, read_input};
 use crate::icicle_chart_data;
 use crate::transaction_classification::TransactionClassifier;
