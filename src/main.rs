@@ -2,6 +2,7 @@ mod file_io;
 mod transactions;
 mod transaction_classification;
 mod icicle_chart_data;
+mod classification_extras;
 
 fn main() {
     icicle_chart_data::generate_icicle_chart_data();

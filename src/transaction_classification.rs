@@ -61,7 +61,8 @@ fn get_longest_common_prefix(string: &str, prefixes: &Trie<u8>) -> Option<String
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use chrono::NaiveDate;
+use super::*;
 
     #[test]
     fn gets_longest_common_prefix() {
