@@ -22,7 +22,7 @@ pub fn print_all_transactions_as_csv() {
     for (source, csv_config, csv_records) in read_input(PathBuf::from("input")) {
         for csv_record in csv_records {
             let transaction = csv_record_to_transaction(&csv_record, &csv_config);
-            let expense = if transaction.amount <= 0.0 { transaction.amount } else { 0.0 };
+            let expense = if transaction.amount <= 0.0 { -transaction.amount } else { 0.0 };
             let income = if transaction.amount > 0.0 { transaction.amount } else { 0.0 };
             println!("\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"",
                      transaction.date.format("%d/%m/%Y"),
