@@ -25,13 +25,8 @@ fn input_subdir_to_tuple(
     subdir: DirEntry,
 ) -> (String, CsvConfig, impl Iterator<Item=StringRecord>) {
     let csv_config = input_subdir_to_csv_config(&subdir);
-    let source = if !csv_config.source_alias.is_empty() {
-        csv_config.source_alias.clone()
-    } else {
-        unwrap_or_exit_debug(subdir.file_name().into_string(), &subdir.path())
-    };
     (
-        source,
+        input_subdir_to_source_name(&subdir, &csv_config),
         csv_config,
         csv_file_path_iter_to_csv_record_iter(input_subdir_to_csv_file_path_iter(&subdir)),
     )
@@ -42,6 +37,14 @@ fn input_subdir_to_csv_config(subdir: &DirEntry) -> CsvConfig {
     config_path.push("config.json");
     let contents = unwrap_or_exit(fs::read_to_string(&config_path), &config_path);
     unwrap_or_exit(serde_json::from_str(&contents), &config_path)
+}
+
+fn input_subdir_to_source_name(subdir: &DirEntry, csv_config: &CsvConfig) -> String {
+    if !csv_config.source_alias.is_empty() {
+        csv_config.source_alias.clone()
+    } else {
+        unwrap_or_exit_debug(subdir.file_name().into_string(), &subdir.path())
+    }
 }
 
 fn input_subdir_to_csv_file_path_iter(subdir: &DirEntry) -> impl Iterator<Item=PathBuf> {
