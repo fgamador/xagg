@@ -2,6 +2,7 @@ mod classification_extras;
 mod file_io;
 mod icicle_chart_data;
 mod transaction_classification;
+mod transaction_extras;
 mod transactions;
 
 fn main() {
