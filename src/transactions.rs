@@ -11,6 +11,7 @@ pub struct CsvConfig {
     date_index: usize,
     date_format: String,
     description_index: usize,
+    category_index: usize,
     amount_index: usize,
     #[serde(default)]
     amount_is_debit: bool,
@@ -20,6 +21,7 @@ pub struct CsvConfig {
 pub struct Transaction {
     pub date: NaiveDate,
     pub raw_description: String,
+    pub raw_category: String,
     pub amount: f32,
     pub description: String,
     pub category: String,
@@ -34,6 +36,11 @@ pub fn csv_record_to_transaction(csv_record: &StringRecord, csv_config: &CsvConf
             .unwrap(),
         raw_description: csv_record
             .get(csv_config.description_index)
+            .unwrap()
+            .trim()
+            .to_string(),
+        raw_category: csv_record
+            .get(csv_config.category_index)
             .unwrap()
             .trim()
             .to_string(),
@@ -70,7 +77,8 @@ mod tests {
             date_index: 1,
             date_format: "%m/%d/%Y".to_string(),
             description_index: 2,
-            amount_index: 4,
+            category_index: 4,
+            amount_index: 5,
             amount_is_debit: false,
         };
         let csv_record = StringRecord::from(vec![
@@ -78,6 +86,7 @@ mod tests {
             "2/12/2020",
             "ACME FALAFEL",
             "ignore2",
+            "ignore3",
             "-12.93",
         ]);
 

@@ -93,6 +93,7 @@ mod tests {
         let transaction = classifier.classify_transaction(Transaction {
             date: NaiveDate::from_ymd(1, 1, 1),
             raw_description: "DWB*DOCTORS W/O BORDER 212-679-6800 NY".to_string(),
+            raw_category: "".to_string(),
             amount: 0.0,
             description: "".to_string(),
             category: "".to_string(),
@@ -113,6 +114,7 @@ mod tests {
         let transaction = classifier.classify_transaction(Transaction {
             date: NaiveDate::from_ymd(1, 1, 1),
             raw_description: "ACME FALAFEL".to_string(),
+            raw_category: "".to_string(),
             amount: 0.0,
             description: "".to_string(),
             category: "".to_string(),
@@ -133,6 +135,7 @@ mod tests {
         let transaction = classifier.classify_transaction(Transaction {
             date: NaiveDate::from_ymd(1, 1, 1),
             raw_description: "".to_string(),
+            raw_category: "".to_string(),
             amount: 0.0,
             description: "".to_string(),
             category: "".to_string(),
