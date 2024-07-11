@@ -19,22 +19,22 @@ pub fn print_all_transactions() {
 }
 
 pub fn print_all_transactions_as_csv() {
-    println!("Date,Description,Expense,Income,Category,Source");
+    println!("Date,Description,Category,Expense,Income,Memo,Source");
     for (source, csv_config, csv_records) in read_input(PathBuf::from("input")) {
         for csv_record in csv_records {
             let transaction = csv_record_to_transaction(&csv_record, &csv_config);
-            if is_transfer(&*transaction.raw_description) { continue; }
+            // if is_transfer(&*transaction.raw_description) { continue; }
 
             let expense = if transaction.amount <= 0.0 { -transaction.amount } else { 0.0 };
             let income = if transaction.amount > 0.0 { transaction.amount } else { 0.0 };
-            println!("\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"",
+            println!("\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"\",\"{}\"",
                      transaction.date.format("%m/%d/%Y"),
-                     transaction.raw_description, expense, income, transaction.raw_category, source);
+                     transaction.raw_description, transaction.raw_category, expense, income, source);
         }
     }
 }
 
-fn is_transfer(description: &str) -> bool
+fn _is_transfer(description: &str) -> bool
 {
     let transfer_descriptions = HashSet::from(
         ["BA ELECTRONIC PAYMENT", "BANK OF AMERICA", "CAPITAL ONE", "CITI AUTOPAY",
