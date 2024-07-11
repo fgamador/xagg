@@ -25,7 +25,7 @@ pub fn print_all_transactions_as_csv() {
             let expense = if transaction.amount <= 0.0 { -transaction.amount } else { 0.0 };
             let income = if transaction.amount > 0.0 { transaction.amount } else { 0.0 };
             println!("\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"",
-                     transaction.date.format("%d/%m/%Y"),
+                     transaction.date.format("%m/%d/%Y"),
                      transaction.raw_description, expense, income, transaction.raw_category, source);
         }
     }
