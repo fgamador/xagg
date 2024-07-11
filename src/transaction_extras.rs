@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use std::collections::HashSet;
 use std::path::PathBuf;
 
 use chrono::NaiveDate;
@@ -22,6 +23,8 @@ pub fn print_all_transactions_as_csv() {
     for (source, csv_config, csv_records) in read_input(PathBuf::from("input")) {
         for csv_record in csv_records {
             let transaction = csv_record_to_transaction(&csv_record, &csv_config);
+            if is_transfer(&*transaction.raw_description) { continue; }
+
             let expense = if transaction.amount <= 0.0 { -transaction.amount } else { 0.0 };
             let income = if transaction.amount > 0.0 { transaction.amount } else { 0.0 };
             println!("\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"",
@@ -29,6 +32,18 @@ pub fn print_all_transactions_as_csv() {
                      transaction.raw_description, expense, income, transaction.raw_category, source);
         }
     }
+}
+
+fn is_transfer(description: &str) -> bool
+{
+    let transfer_descriptions = HashSet::from(
+        ["BA ELECTRONIC PAYMENT", "BANK OF AMERICA", "CAPITAL ONE", "CITI AUTOPAY",
+            "CITI CREDIT CARD", "CREDIT BALANCE REFUND DEBIT", "CREDIT CARD PAYMENT",
+            "DEPOSIT FROM SHARE 01", "DIGITAL DEPOSIT FROM SHARE 01",
+            "DIGITAL DEPOSIT FROM SHARE 09", "DIGITAL WITHDRAWAL TO SHARE 01",
+            "DIGITAL WITHDRAWAL TO SHARE 09", "PADDLE", "PAYMENT THANK YOU", "PAYPAL",
+            "PAYPAL TRANSFER", "WITHDRAWAL TO SHARE 09"]);
+    transfer_descriptions.contains(description)
 }
 
 pub fn summarize_transactions() {
